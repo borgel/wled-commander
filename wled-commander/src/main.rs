@@ -1,20 +1,66 @@
 mod config;
+mod wled;
 
 use config::*;
+use wled::*;
 
 use std::path::PathBuf;
 use std::fs::File;
 use std::collections::HashMap;
 use std::io::Read;
 
+use futures::future::{join_all};
+use futures::executor::block_on;
+
 type ConfigFile = HashMap<String, TopLevel>;
-//type ConfigFile = Vec<TopLevel>;
 
-fn main() {
-    println!("Hello, world!");
+// magically builds an executor that lets us make main async
+#[tokio::main]
+async fn main() {
+   let p = PathBuf::from("house.yaml");
+   let cfg = match load_config(&p) {
+      Ok(c) => c,
+      _ => std::process::exit(-1),
+   };
 
-    let p = PathBuf::from("house.yaml");
-    load_config(&p);
+   // split the loaded config file into Devices and Configs
+   let mut config: Option<Config> = None;
+   let mut controllers: HashMap<String, Wled> = HashMap::new();
+   for (name, node) in cfg.into_iter() {
+      match node {
+         TopLevel::Config(c) => {
+            config = Some(c);
+         },
+         TopLevel::Device(d) => {
+            controllers.insert(name, Wled::new(d));
+            ()
+         },
+      }
+   }
+   if config == None {
+      eprintln!("No config file found");
+      std::process::exit(-1);
+   }
+   // now we have a single non Option config!
+   let config = config.unwrap();
+
+   // FIXME rm
+   println!("devices {:?}", controllers);
+   println!("config {:?}", config);
+
+   // init one to test
+   let mut all_init = Vec::new();
+   for c in controllers.values() {
+      all_init.push(c.init());
+   }
+
+   // FIXME rm
+   println!("blocking...");
+   //block_on(join_all(all_init));
+   join_all(all_init).await;
+
+   // FIXME rm
+   println!("done");
 }
 
 fn load_config(path: &PathBuf) -> Result<ConfigFile, ()>  {
@@ -24,8 +70,6 @@ fn load_config(path: &PathBuf) -> Result<ConfigFile, ()>  {
       Ok(file) => file,
    };
 
-   println!("Opened {:?}", &f);
-
    let mut s = String::new();
    f.read_to_string(&mut s).unwrap();
 
@@ -33,11 +77,11 @@ fn load_config(path: &PathBuf) -> Result<ConfigFile, ()>  {
       Ok(inf) => inf,
       Err(e) => {
          // this happens if files are empty, malformed, etc
-         println!("failed to inflate: {}", e);
+         println!("failed to inflate: {} from {:?}", e, &f);
          return Err(())
       },
    };
 
-   println!("inflated info {:#?}\n\n", &inflated);
+   //println!("inflated info {:#?}\n\n", &inflated);
    Ok(inflated)
 }
