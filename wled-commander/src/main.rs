@@ -1,5 +1,6 @@
 mod config;
 mod wled;
+mod wled_types;
 
 use config::*;
 use wled::*;
@@ -8,10 +9,12 @@ use std::path::PathBuf;
 use std::fs::File;
 use std::collections::HashMap;
 use std::io::Read;
+use log::{info, error};
 
 type ConfigFile = HashMap<String, TopLevel>;
 
 fn main() {
+   env_logger::init();
    let p = PathBuf::from("house.yaml");
    let cfg = match load_config(&p) {
       Ok(c) => c,
@@ -33,19 +36,21 @@ fn main() {
       }
    }
    if config == None {
-      eprintln!("No config file found");
+      error!("No config file found");
       std::process::exit(-1);
    }
    // now we have a single non Option config!
    let config = config.unwrap();
 
-   // FIXME rm
-   println!("devices {:?}", controllers);
-   println!("config {:?}", config);
+   info!("Devices {:?}", controllers);
+   info!("Config {:?}", config);
 
    // init everything
-   for c in controllers.values() {
-      c.init();
+   for c in controllers.values_mut() {
+      let r = c.init();
+      if let Err(e) = r {
+         println!("Init failed: {:?}", e);
+      }
    }
 
    // FIXME rm

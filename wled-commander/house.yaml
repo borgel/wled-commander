@@ -77,6 +77,20 @@ PorchRight:
    # other params
    ip_name: 192.168.1.214
    syncMaster: true
+
+LivingroomWindow:
+   segments:
+      strip:
+         # start and end in pixels
+         # FIXME start?
+         start: 18
+         end: 488
+         mirror: false
+         reverse: false
+   # other params
+   ip_name: 192.168.1.139
+   syncMaster: false
+
 Config:
    # describe the group config
    brightness: 100      # percent
