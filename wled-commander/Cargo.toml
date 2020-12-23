@@ -13,5 +13,4 @@ serde_yaml = "0.8.14"
 serde = { version = "1.0", features = ["derive"] }
 futures = { version = "0.3.*" }
 # HUUUUGE dep tree
-reqwest = { version = "0.10", features = ["json"] }
-tokio = { version = "0.3", features = ["full"] }
+reqwest = { version = "0.10", features = ["json", "blocking"] }

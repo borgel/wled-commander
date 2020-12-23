@@ -9,14 +9,9 @@ use std::fs::File;
 use std::collections::HashMap;
 use std::io::Read;
 
-use futures::future::{join_all};
-use futures::executor::block_on;
-
 type ConfigFile = HashMap<String, TopLevel>;
 
-// magically builds an executor that lets us make main async
-#[tokio::main]
-async fn main() {
+fn main() {
    let p = PathBuf::from("house.yaml");
    let cfg = match load_config(&p) {
       Ok(c) => c,
@@ -48,16 +43,10 @@ async fn main() {
    println!("devices {:?}", controllers);
    println!("config {:?}", config);
 
-   // init one to test
-   let mut all_init = Vec::new();
+   // init everything
    for c in controllers.values() {
-      all_init.push(c.init());
+      c.init();
    }
-
-   // FIXME rm
-   println!("blocking...");
-   //block_on(join_all(all_init));
-   join_all(all_init).await;
 
    // FIXME rm
    println!("done");
