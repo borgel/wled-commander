@@ -45,16 +45,19 @@ fn main() {
    info!("Devices {:?}", controllers);
    info!("Config {:?}", config);
 
-   // init everything
    for c in controllers.values_mut() {
       let r = c.init();
       if let Err(e) = r {
          println!("Init failed: {:?}", e);
       }
+      let r = c.set_config(&config);
+      if let Err(e) = r {
+         println!("Set config failed: {:?}", e);
+      }
    }
 
    // FIXME rm
-   println!("done");
+   println!("Done");
 }
 
 fn load_config(path: &PathBuf) -> Result<ConfigFile, ()>  {
