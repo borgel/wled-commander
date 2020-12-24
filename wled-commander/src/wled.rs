@@ -4,6 +4,7 @@ use crate::wled_types;
 use crate::wled_types::*;
 
 use std::collections::{HashMap, HashSet};
+use std::default::Default;
 
 #[derive(Clone, Debug, PartialEq)]
 struct LiveInfo {
@@ -36,20 +37,15 @@ impl Wled {
          .json::<Info>()?;
       println!("{:#?}", resp);
 
-      // TODO set sync master/receive sync
+      // set sync master/receive sync
       let syn_cmd = StateCommand {
          udp: Some(StateUdp {
             send: self.from_config.sync_master,
             recv: !self.from_config.sync_master,
-         })
+         }),
+         ..Default::default()
       };
-
-      let syn_url = format!("http://{}/json/state", self.ip);
-    let syn_response = reqwest::blocking::Client::new()
-        .post(&syn_url)
-        .json(&syn_cmd)
-        .send()?;
-    println!("Response status {}", syn_response.status());
+      self.set_state(&syn_cmd)?;
 
       // get the list of effects this device supports
       let efx = format!("http://{}/json/effects", self.ip);
@@ -69,9 +65,29 @@ impl Wled {
    pub fn set_config(&self, cfg: &config::Config) -> Result<(), Box<dyn std::error::Error>> {
       // given the config, build and apply presets and playlists
 
-      // TODO set brightness
+      // build brightness
+      let scaled_brightness = (cfg.brightness as f32 / 100.0) * 255.0;
+
+      // build segments
+      let mut segs: Vec<wled_types::Segment> = Vec::new();
+      for s in self.from_config.segments.values() {
+         segs.push(wled_types::Segment::new(&s));
+      }
+
+      // set everything at once
+      let big_cmd = StateCommand {
+         brightness: Some(scaled_brightness as u32),
+         segments: Some(segs),
+         ..Default::default()
+      };
+      let r = self.set_state(&big_cmd)?;
+
       // TODO set presets
       // TODO set preset group progression
+
+      // FIXME rm
+      println!("Set resulting state: {:#?}", r);
+      println!("State after set: {:#?}", self.get_state());
 
       Ok(())
    }
@@ -79,6 +95,21 @@ impl Wled {
    fn get_state(&self) -> Result<State, Box<dyn std::error::Error>> {
       let st = format!("http://{}/json/state", self.ip);
       Ok(reqwest::blocking::get(&st)?.json::<wled_types::State>()?)
+   }
+
+   fn set_state(&self, new_state: &StateCommand) -> Result<StateCommand, Box<dyn std::error::Error>> {
+      // FIXME info
+      println!("Setting state {:#?}", new_state);
+
+      let syn_url = format!("http://{}/json/state", self.ip);
+      let response = reqwest::blocking::Client::new()
+         .post(&syn_url)
+         .json(&new_state)
+         .send()?;
+      if response.status() == 200 {
+         return Ok(response.json::<StateCommand>()?);
+      }
+      Err(Box::new(response.error_for_status().err().unwrap()))
    }
 
    // API docs here

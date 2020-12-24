@@ -3,6 +3,8 @@
 use serde::{Serialize, Deserialize};
 use std::collections::HashSet;
 
+use crate::config;
+
 // FIXME mv? rename?
 // exposed JSON APIs
 pub enum JsonApi {
@@ -11,7 +13,7 @@ pub enum JsonApi {
    State
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct StateUdp {
    pub send: bool,
    pub recv: bool,
@@ -21,9 +23,37 @@ pub struct StateUdp {
 pub struct State {
    on: bool,
    #[serde(rename = "ps")]
-   current_preset: u32,
+   current_preset: i32,
    #[serde(rename = "udpn")]
    upd: StateUdp,
+   #[serde(rename = "seg")]
+   pub segments: Option<Vec<Segment>>,
+}
+
+#[derive(Default, Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct Segment {
+   // omitted ID
+   pub start: u32,
+   pub stop: u32,
+   // omitted len
+   // omitted colors
+
+   // need effect, speed, intensity?
+
+   #[serde(rename = "rev")]
+   pub reverse: bool,
+   #[serde(rename = "mi")]
+   pub mirror: bool,
+}
+impl Segment {
+   pub fn new(other: &config::Segment) -> Self {
+      Segment {
+         start: other.start,
+         stop: other.end,
+         reverse: other.reverse,
+         mirror: other.mirror,
+      }
+   }
 }
 
 #[derive(Default, Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -32,6 +62,12 @@ pub struct StateCommand {
    #[serde(skip_serializing_if = "Option::is_none")]
    #[serde(rename = "udpn")]
    pub udp: Option<StateUdp>,
+   #[serde(skip_serializing_if = "Option::is_none")]
+   #[serde(rename = "bri")]
+   pub brightness: Option<u32>,
+   #[serde(skip_serializing_if = "Option::is_none")]
+   #[serde(rename = "seg")]
+   pub segments: Option<Vec<Segment>>,
 }
 
 pub type Effects = HashSet<String>;
