@@ -51,6 +51,10 @@ impl Wled {
       let efx = format!("http://{}/json/effects", self.ip);
       let loaded_effects = reqwest::blocking::get(&efx)?
          .json::<Effects>()?;
+      // to lower case every effect name
+      let loaded_effects = loaded_effects.iter()
+         .map(|e| e.to_lowercase())
+         .collect();
 
       self.loaded = Some(LiveInfo {
          effects: loaded_effects,
@@ -68,20 +72,19 @@ impl Wled {
       // build brightness
       let scaled_brightness = (cfg.brightness as f32 / 100.0) * 255.0;
 
-      // FIXME TODO
-      // iterate through presets
-      //    for each preset, figure out what segments are active, set colors and config on the device, and save it in a preset slot
-
+      // FIXME rm
+      /*
       // build segments
       let mut segs: Vec<wled_types::Segment> = Vec::new();
       for s in self.from_config.segments.values() {
          segs.push(wled_types::Segment::new(&s));
       }
+      */
 
       // set everything at once
       let big_cmd = StateCommand {
          brightness: Some(scaled_brightness as u32),
-         segments: Some(segs),
+         //segments: Some(segs),
          ..Default::default()
       };
       let r = self.set_state(&big_cmd)?;
@@ -93,13 +96,36 @@ impl Wled {
       Ok(())
    }
 
-   pub fn set_preset(&self, slot: u32, preset: &config::Preset, segment: &str) -> Result<(), Box<dyn std::error::Error>> {
+   // TODO take a different preset structure that's missing segments
+   pub fn set_preset(&self, slot: u32, preset: &config::Preset, segments_in_preset: &Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
       // FIXME rm
-      println!("Set preset slot {} on segment {}", slot, segment);
+      println!("Set preset slot {} on segment {:?}", slot, segments_in_preset);
 
-      // TODO configmr segment exists
-      // TODO set preset on segment. load state first to work from?
+      // filter the incoming list of segments based on Self's list of segments, get those
+      // segments from Self, then for each construct a wled_types::Segment and build a Vec
+      let segs: Vec<Segment> = segments_in_preset.iter()
+         .filter(|s| self.from_config.segments.contains_key(*s))
+         // we've filtered for segments that exist, so this unwrap is safe
+         .map(|s| self.from_config.segments.get(s).unwrap())
+         .map(|s| wled_types::Segment::new(s))
+         // now set the other parameters in the segment
+         //.map(|s| s.effect_id = preset.
+         .collect();
+
+      // TODO set colors and effects per segment
+
+      // with one call, set these segments and save it as a preset slot
+      self.set_state(& StateCommand {
+         segments: Some(segs),
+         set_preset: Some(slot),
+         ..Default::default()
+      })?;
+
       Ok(())
+   }
+
+   fn get_effect_id(&self, name: &str) -> Result<u32, ()> {
+      Ok(0)
    }
 
    fn get_state(&self) -> Result<State, Box<dyn std::error::Error>> {

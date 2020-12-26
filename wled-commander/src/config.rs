@@ -31,7 +31,7 @@ pub struct Device {
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Preset {
-   pub segments: Vec<String>,
+   pub segments: HashMap<String, Vec<String>>,
    pub effect: String,
    pub color1: Option<u32>,
    pub color2: Option<u32>,

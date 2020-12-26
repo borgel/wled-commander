@@ -58,25 +58,15 @@ fn main() {
 
    // iterate through config presets, slice them by targetted device, and send
    for (idx, pre) in config.presets.values().enumerate() {
-      // FIXME rm
-      println!("preset {}: {:?}", idx, pre);
-
-      // TODO find all segments from this device? reshape structure?
-
-      // find device and segment names
-      for segs in &pre.segments {
-         let mut name_split = segs.split("-");
-         let device_name = name_split.next().unwrap();
-         let segment_name = name_split.next().unwrap();
-
+      for (device_name, segments) in &pre.segments {
          if let Some(c) = controllers.get(device_name) {
-            if let Err(e) = c.set_preset(idx as u32, &pre, segment_name) {
+            if let Err(e) = c.set_preset(idx as u32, &pre, &segments) {
                error!("Failed to set preset slot {} on {}: {}", idx, device_name, e);
             }
          }
       }
    }
-   // now all presets are configured with the correct segments etc
+   // now all presets on all devices are configured in the same oreder and with the correct segments
 
    // TODO set preset group progression for all devices based on config
    // set either playlists (11+) or HTTP presets

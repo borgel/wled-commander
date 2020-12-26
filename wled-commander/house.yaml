@@ -24,14 +24,27 @@ Config:
       # array of presets, first one is preset 1
       one:
          # assume all strips
-         segments: [Small-strip]
+         segments:
+            # name of each device: [array of segment or group names]
+            Small: [stripA]
          effect: Android
          color1: 0xdd4d2f
          color2: 0x2fdd78
          color3: 0x2f48dd
+      three:
+         # assume all strips
+         segments:
+            # name of each device: [array of segment or group names]
+            Small: [stripA, stripB]
+         effect: Android
+         color1: 0x2fdd78
+         color2: 0xdd4d2f
+         color3: 0x2f48dd
       two:
          # assume all strips
-         segments: [Small-strip, Small-bad, Bad-bad]
+         segments:
+            Small: [stripB, bad]
+            Bad: [bad]
          effect: meteor
          color1: 0x2fdd78
          color2: 0x2f48dd

@@ -27,6 +27,8 @@ pub struct State {
    current_preset: i32,
    #[serde(rename = "udpn")]
    upd: StateUdp,
+   #[serde(rename = "pl")]
+   pub current_playlist: i32,
    #[serde(rename = "seg")]
    pub segments: Option<Vec<Segment>>,
 }
@@ -36,10 +38,14 @@ pub struct Segment {
    // omitted ID
    pub start: u32,
    pub stop: u32,
-   // omitted len
-   // omitted colors
-
-   // need effect, speed, intensity?
+   // omitted len, which is inferred from stop
+   // TODO colors
+   #[serde(rename = "fx")]
+   pub effect_id: u32,
+   #[serde(rename = "ix")]
+   pub effect_intensity: u8,
+   #[serde(rename = "sx")]
+   pub effect_speed: u8,
 
    #[serde(rename = "rev")]
    pub reverse: bool,
@@ -53,6 +59,7 @@ impl Segment {
          stop: other.end,
          reverse: other.reverse,
          mirror: other.mirror,
+         ..Default::default()
       }
    }
 }
@@ -66,6 +73,12 @@ pub struct StateCommand {
    #[serde(skip_serializing_if = "Option::is_none")]
    #[serde(rename = "bri")]
    pub brightness: Option<u32>,
+   #[serde(skip_serializing_if = "Option::is_none")]
+   #[serde(rename = "psave")]
+   pub set_preset: Option<u32>,
+   #[serde(skip_serializing_if = "Option::is_none")]
+   #[serde(rename = "pl")]
+   pub current_playlist: Option<i32>,
    #[serde(skip_serializing_if = "Option::is_none")]
    #[serde(rename = "seg")]
    pub segments: Option<Vec<Segment>>,
