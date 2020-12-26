@@ -19,6 +19,7 @@ pub struct StateUdp {
    pub recv: bool,
 }
 
+// FIXME combine with optional one
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct State {
    on: bool,

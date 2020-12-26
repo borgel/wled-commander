@@ -68,6 +68,10 @@ impl Wled {
       // build brightness
       let scaled_brightness = (cfg.brightness as f32 / 100.0) * 255.0;
 
+      // FIXME TODO
+      // iterate through presets
+      //    for each preset, figure out what segments are active, set colors and config on the device, and save it in a preset slot
+
       // build segments
       let mut segs: Vec<wled_types::Segment> = Vec::new();
       for s in self.from_config.segments.values() {
@@ -82,13 +86,19 @@ impl Wled {
       };
       let r = self.set_state(&big_cmd)?;
 
-      // TODO set presets
-      // TODO set preset group progression
-
       // FIXME rm
       println!("Set resulting state: {:#?}", r);
       println!("State after set: {:#?}", self.get_state());
 
+      Ok(())
+   }
+
+   pub fn set_preset(&self, slot: u32, preset: &config::Preset, segment: &str) -> Result<(), Box<dyn std::error::Error>> {
+      // FIXME rm
+      println!("Set preset slot {} on segment {}", slot, segment);
+
+      // TODO configmr segment exists
+      // TODO set preset on segment. load state first to work from?
       Ok(())
    }
 
