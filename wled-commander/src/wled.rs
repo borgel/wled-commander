@@ -1,14 +1,15 @@
-
 use crate::config;
 use crate::wled_types;
 use crate::wled_types::*;
 
-use std::collections::{HashMap, HashSet};
+use std::collections::{HashMap};
 use std::default::Default;
+
+use raster::Color;
 
 #[derive(Clone, Debug, PartialEq)]
 struct LiveInfo {
-   effects: HashSet<String>,
+   effects: Effects,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -50,14 +51,19 @@ impl Wled {
       // get the list of effects this device supports
       let efx = format!("http://{}/json/effects", self.ip);
       let loaded_effects = reqwest::blocking::get(&efx)?
-         .json::<Effects>()?;
-      // to lower case every effect name
-      let loaded_effects = loaded_effects.iter()
-         .map(|e| e.to_lowercase())
-         .collect();
+         .json::<Vec<String>>()?;
+
+      // reshape to a hashmap of effects
+      let mut effect_map: Effects = HashMap::new();
+      for (i, e) in loaded_effects.iter().enumerate() {
+         effect_map.insert(e.to_lowercase(), i as u32);
+      }
+
+      // FIXME rm
+      println!("effects\n{:?}", effect_map);
 
       self.loaded = Some(LiveInfo {
-         effects: loaded_effects,
+         effects: effect_map,
       });
 
       // FIXME rm
@@ -98,8 +104,25 @@ impl Wled {
 
    // TODO take a different preset structure that's missing segments
    pub fn set_preset(&self, slot: u32, preset: &config::Preset, segments_in_preset: &Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
-      // FIXME rm
-      println!("Set preset slot {} on segment {:?}", slot, segments_in_preset);
+      let effect_intensity = preset.effect_intensity.unwrap_or(128);
+      let effect_speed = preset.effect_speed.unwrap_or(128);
+
+      // build color tuple
+      let c1 = format!("#{:x}", preset.color1.unwrap_or(0x0));
+      let c1 = Color::hex(&c1).unwrap();
+      let c2 = format!("#{:x}", preset.color2.unwrap_or(0x0));
+      let c2 = Color::hex(&c2).unwrap();
+      let c3 = format!("#{:x}", preset.color3.unwrap_or(0x0));
+      let c3 = Color::hex(&c3).unwrap();
+      let colors = (c1, c2, c3);
+
+      let extras = SegmentExtras {
+         colors: colors,
+         // silently convert unknown effects into solid color
+         effect_id: self.get_effect_id(&preset.effect).unwrap_or(0),
+         effect_intensity: effect_intensity,
+         effect_speed: effect_speed
+      };
 
       // filter the incoming list of segments based on Self's list of segments, get those
       // segments from Self, then for each construct a wled_types::Segment and build a Vec
@@ -107,12 +130,8 @@ impl Wled {
          .filter(|s| self.from_config.segments.contains_key(*s))
          // we've filtered for segments that exist, so this unwrap is safe
          .map(|s| self.from_config.segments.get(s).unwrap())
-         .map(|s| wled_types::Segment::new(s))
-         // now set the other parameters in the segment
-         //.map(|s| s.effect_id = preset.
+         .map(|s| wled_types::Segment::new(s, Some(&extras)))
          .collect();
-
-      // TODO set colors and effects per segment
 
       // with one call, set these segments and save it as a preset slot
       self.set_state(& StateCommand {
@@ -125,7 +144,12 @@ impl Wled {
    }
 
    fn get_effect_id(&self, name: &str) -> Result<u32, ()> {
-      Ok(0)
+      if let Some(loaded) = &self.loaded {
+         if let Some(idx) = loaded.effects.get(name) {
+            return Ok(*idx);
+         }
+      }
+      Err(())
    }
 
    fn get_state(&self) -> Result<State, Box<dyn std::error::Error>> {

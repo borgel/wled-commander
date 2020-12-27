@@ -37,6 +37,8 @@ Config:
             # name of each device: [array of segment or group names]
             Small: [stripA, stripB]
          effect: Android
+         effect_intensity: 128
+         effect_speed: 128
          color1: 0x2fdd78
          color2: 0xdd4d2f
          color3: 0x2f48dd
@@ -46,6 +48,8 @@ Config:
             Small: [stripB, bad]
             Bad: [bad]
          effect: meteor
+         effect_intensity: 128
+         effect_speed: 128
          color1: 0x2fdd78
          color2: 0x2f48dd
          color3: 0xdd4d2f

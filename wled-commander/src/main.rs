@@ -69,7 +69,7 @@ fn main() {
    // now all presets on all devices are configured in the same oreder and with the correct segments
 
    // TODO set preset group progression for all devices based on config
-   // set either playlists (11+) or HTTP presets
+   // set either playlists (11+) or HTTP presets? playlist 0?
 
    // FIXME rm
    println!("Done");

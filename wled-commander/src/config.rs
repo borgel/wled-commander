@@ -33,6 +33,8 @@ pub struct Device {
 pub struct Preset {
    pub segments: HashMap<String, Vec<String>>,
    pub effect: String,
+   pub effect_intensity: Option<u8>,
+   pub effect_speed: Option<u8>,
    pub color1: Option<u32>,
    pub color2: Option<u32>,
    pub color3: Option<u32>,
