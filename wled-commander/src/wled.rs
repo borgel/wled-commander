@@ -4,6 +4,7 @@ use crate::wled_types::*;
 
 use std::collections::{HashMap};
 use std::default::Default;
+use log::{info};
 
 use raster::Color;
 
@@ -59,9 +60,6 @@ impl Wled {
          effect_map.insert(e.to_lowercase(), i as u32);
       }
 
-      // FIXME rm
-      println!("effects\n{:?}", effect_map);
-
       self.loaded = Some(LiveInfo {
          effects: effect_map,
       });
@@ -78,26 +76,12 @@ impl Wled {
       // build brightness
       let scaled_brightness = (cfg.brightness as f32 / 100.0) * 255.0;
 
-      // FIXME rm
-      /*
-      // build segments
-      let mut segs: Vec<wled_types::Segment> = Vec::new();
-      for s in self.from_config.segments.values() {
-         segs.push(wled_types::Segment::new(&s));
-      }
-      */
-
       // set everything at once
       let big_cmd = StateCommand {
          brightness: Some(scaled_brightness as u32),
-         //segments: Some(segs),
          ..Default::default()
       };
-      let r = self.set_state(&big_cmd)?;
-
-      // FIXME rm
-      println!("Set resulting state: {:#?}", r);
-      println!("State after set: {:#?}", self.get_state());
+      self.set_state(&big_cmd)?;
 
       Ok(())
    }
@@ -158,8 +142,7 @@ impl Wled {
    }
 
    fn set_state(&self, new_state: &StateCommand) -> Result<StateCommand, Box<dyn std::error::Error>> {
-      // FIXME info
-      println!("Setting state {:#?}", new_state);
+      info!("Setting state {:#?}", new_state);
 
       let syn_url = format!("http://{}/json/state", self.ip);
       let response = reqwest::blocking::Client::new()
@@ -175,13 +158,6 @@ impl Wled {
    // API docs here
    // https://github.com/Aircoookie/WLED/wiki/HTTP-request-API
    // https://github.com/Aircoookie/WLED/wiki/JSON-API
-
-   /*
-   fn apply effect. take brightness, etc?
-
-   fn set boot config
-      preset rotation with linger brightness
-      */
 
    /*
    TODO

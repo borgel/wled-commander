@@ -28,28 +28,28 @@ Config:
             # name of each device: [array of segment or group names]
             Small: [stripA]
          effect: Android
-         color1: 0xdd4d2f
-         color2: 0x2fdd78
-         color3: 0x2f48dd
+         color1: 0xff0000
+         color2: 0xff00ff
+         color3: 0xffff00
       three:
          # assume all strips
          segments:
             # name of each device: [array of segment or group names]
             Small: [stripA, stripB]
          effect: Android
-         effect_intensity: 128
-         effect_speed: 128
-         color1: 0x2fdd78
-         color2: 0xdd4d2f
-         color3: 0x2f48dd
+         effect_intensity: 180
+         effect_speed: 100
+         color1: 0xff0000
+         color2: 0xff00ff
+         color3: 0xffff00
       two:
          # assume all strips
          segments:
             Small: [stripB, bad]
             Bad: [bad]
          effect: meteor
-         effect_intensity: 128
-         effect_speed: 128
-         color1: 0x2fdd78
-         color2: 0x2f48dd
-         color3: 0xdd4d2f
+         effect_intensity: 180
+         effect_speed: 100
+         color1: 0xff0000
+         color2: 0xff00ff
+         color3: 0xffff00
