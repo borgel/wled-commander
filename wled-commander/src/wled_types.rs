@@ -110,6 +110,9 @@ pub struct StateCommand {
    #[serde(skip_serializing_if = "Option::is_none")]
    #[serde(rename = "seg")]
    pub segments: Option<Vec<Segment>>,
+   #[serde(skip_serializing_if = "Option::is_none")]
+   #[serde(rename = "playlist")]
+   pub playlist: Option<Playlist>,
 }
 
 // map effect name to index
@@ -135,25 +138,31 @@ pub enum PlaylistDuration {
    Single(u32),
    Multiple(Vec<u32>),
 }
+impl std::default::Default for PlaylistDuration {
+   fn default() -> Self { Self::Single(0) }
+}
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum PlaylistTransition {
    Single(u32),
    Multiple(Vec<u32>),
 }
+impl std::default::Default for PlaylistTransition {
+   fn default() -> Self { Self::Single(0) }
+}
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Playlist {
    #[serde(rename = "ps")]
-   presets: Vec<u32>,
+   pub presets: Vec<u32>,
    #[serde(rename = "dur")]
-   duration: PlaylistDuration,
+   pub duration: PlaylistDuration,
    #[serde(rename = "transition")]
-   transition: PlaylistTransition,
+   pub transition_time: PlaylistTransition,
    #[serde(skip_serializing_if = "Option::is_none")]
-   repeat: Option<u32>, // 0 for indefinite
+   pub repeat: Option<u32>, // 0 for indefinite
    #[serde(skip_serializing_if = "Option::is_none")]
-   end: Option<u32>, // what preset to apply if stops repeating
+   pub end: Option<u32>, // what preset to apply if stops repeating
 }
 
 

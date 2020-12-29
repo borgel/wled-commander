@@ -19,7 +19,7 @@ Small:
 Config:
    # describe the group config
    brightness: 50      # percent
-   preset_linger: 20    # seconds
+   preset_linger: 10    # seconds
    presets:
       # array of presets, first one is preset 1
       one:

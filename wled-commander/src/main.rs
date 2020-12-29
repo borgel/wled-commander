@@ -56,8 +56,12 @@ fn main() {
       }
    }
 
+   // start the vec of preset IDs in use which we will turn into a playlist
+   let mut plist: Vec<u32> = Vec::new();
+
    // iterate through config presets, slice them by targetted device, and send
    for (idx, pre) in config.presets.values().enumerate() {
+      plist.push((idx + 1) as u32);
       for (device_name, segments) in &pre.segments {
          if let Some(c) = controllers.get(device_name) {
             if let Err(e) = c.set_preset(idx as u32, &pre, &segments) {
@@ -68,9 +72,23 @@ fn main() {
    }
    // now all presets on all devices are configured in the same oreder and with the correct segments
 
-   // TODO set preset group progression for all devices based on config
-   // set either playlists (11+) or HTTP presets? playlist 0?
-   // update all to 11, then use JSON playlists
+   // FIXME rm
+   println!("{:?}", plist);
+
+   // set preset group progression for all devices based on config
+   for c in controllers.values() {
+      let r = c.set_playlist(
+         &plist,
+         config.preset_linger,
+         1, // transition time
+         );
+
+      // TODO some more elegant way to handle this
+      if let Err(e) = r {
+         error!("Failed to set playlist on {:?}: {}", c, e);
+      }
+   }
+   println!("Setup an effect playlist {} items long", plist.len());
 }
 
 fn load_config(path: &PathBuf) -> Result<ConfigFile, ()>  {

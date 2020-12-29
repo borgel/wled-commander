@@ -117,6 +117,9 @@ impl Wled {
          .map(|s| wled_types::Segment::new(s, Some(&extras)))
          .collect();
 
+      // FIXME rm
+      println!("segments {:#?}", &segs);
+
       // with one call, set these segments and save it as a preset slot
       self.set_state(& StateCommand {
          segments: Some(segs),
@@ -127,9 +130,24 @@ impl Wled {
       Ok(())
    }
 
+   pub fn set_playlist(&self, ids: &Vec<u32>, duration_s: u32, transition_time_s: u32) -> Result<(), Box<dyn std::error::Error>> {
+      // TODO build a playlist object and send it with state
+      self.set_state(& StateCommand {
+         playlist: Some(Playlist {
+            presets: ids.clone(),
+            duration: PlaylistDuration::Single(duration_s * 10),
+            transition_time: PlaylistTransition::Single(transition_time_s * 10),
+            ..Default::default()
+         }),
+         current_playlist: Some(0), // set playlist cycle to on
+         ..Default::default()
+      })?;
+      Ok(())
+   }
+
    fn get_effect_id(&self, name: &str) -> Result<u32, ()> {
       if let Some(loaded) = &self.loaded {
-         if let Some(idx) = loaded.effects.get(name) {
+         if let Some(idx) = loaded.effects.get(&name.to_lowercase()) {
             return Ok(*idx);
          }
       }
@@ -142,7 +160,7 @@ impl Wled {
    }
 
    fn set_state(&self, new_state: &StateCommand) -> Result<StateCommand, Box<dyn std::error::Error>> {
-      info!("Setting state {:#?}", new_state);
+      println!("Setting state {:#?}", new_state);
 
       let syn_url = format!("http://{}/json/state", self.ip);
       let response = reqwest::blocking::Client::new()
