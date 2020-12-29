@@ -8,6 +8,10 @@ use log::{info};
 
 use raster::Color;
 
+// FIXME rm
+use serde::{Deserialize, Serialize};
+use serde_json;
+
 #[derive(Clone, Debug, PartialEq)]
 struct LiveInfo {
    effects: Effects,
@@ -135,8 +139,10 @@ impl Wled {
       self.set_state(& StateCommand {
          playlist: Some(Playlist {
             presets: ids.clone(),
-            duration: PlaylistDuration::Single(duration_s * 10),
-            transition_time: PlaylistTransition::Single(transition_time_s * 10),
+            //duration: PlaylistDuration::Single(duration_s * 10),
+            //transition_time: PlaylistTransition::Single(transition_time_s * 10),
+            duration: duration_s * 10,
+            transition_time: transition_time_s * 10,
             ..Default::default()
          }),
          current_playlist: Some(0), // set playlist cycle to on
@@ -160,7 +166,12 @@ impl Wled {
    }
 
    fn set_state(&self, new_state: &StateCommand) -> Result<StateCommand, Box<dyn std::error::Error>> {
-      println!("Setting state {:#?}", new_state);
+      info!("Setting state {:#?}", new_state);
+
+      // FIXME rm
+      if let Ok(s) = serde_json::to_string(&new_state) {
+         println!("{}", s);
+      }
 
       let syn_url = format!("http://{}/json/state", self.ip);
       let response = reqwest::blocking::Client::new()

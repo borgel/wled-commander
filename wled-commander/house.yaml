@@ -28,6 +28,8 @@ Config:
             # name of each device: [array of segment or group names]
             Small: [stripA]
          effect: Android
+         effect_intensity: 180
+         effect_speed: 100
          color1: 0xff0000
          color2: 0xff00ff
          color3: 0xffff00
@@ -36,7 +38,7 @@ Config:
          segments:
             # name of each device: [array of segment or group names]
             Small: [stripA, stripB]
-         effect: Android
+         effect: strobe
          effect_intensity: 180
          effect_speed: 100
          color1: 0xff0000

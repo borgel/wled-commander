@@ -156,9 +156,11 @@ pub struct Playlist {
    #[serde(rename = "ps")]
    pub presets: Vec<u32>,
    #[serde(rename = "dur")]
-   pub duration: PlaylistDuration,
+   //pub duration: PlaylistDuration,
+   pub duration: u32,
    #[serde(rename = "transition")]
-   pub transition_time: PlaylistTransition,
+   //pub transition_time: PlaylistTransition,
+   pub transition_time: u32,
    #[serde(skip_serializing_if = "Option::is_none")]
    pub repeat: Option<u32>, // 0 for indefinite
    #[serde(skip_serializing_if = "Option::is_none")]
